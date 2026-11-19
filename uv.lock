@@ -366,11 +366,11 @@ dependencies = [
 requires-dist = [
     { name = "jupyter" },
     { name = "matplotlib" },
-    { name = "numpy", specifier = "<2" },
-    { name = "pandas", specifier = "<3" },
-    { name = "pandas-stubs", specifier = "~=2.3.3" },
-    { name = "pyspark", specifier = "==3.5.*" },
-    { name = "streamlit", specifier = ">=1.50" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pandas-stubs" },
+    { name = "pyspark" },
+    { name = "streamlit" },
 ]
 
 [[package]]

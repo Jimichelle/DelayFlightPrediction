@@ -1,7 +1,7 @@
 # Miroir de pyproject.toml pour une installation avec pip (Python 3.11)
-pyspark==3.5.*
-numpy<2
-pandas<3
+pyspark
+numpy
+pandas
 jupyter
 matplotlib
-streamlit>=1.50
+streamlit

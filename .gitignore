@@ -1,6 +1,7 @@
 # Dataset Kaggle (~600 Mo) : à télécharger, voir README
 data/*
 !data/.gitkeep
+!data/*.csv
 
 # Python / Jupyter
 .venv/
