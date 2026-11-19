@@ -1,0 +1,86 @@
+name: hdfs
+
+x-hadoop: &hadoop
+  build: .
+  image: hdfs-ubuntu:3.4.1
+  restart: unless-stopped
+  networks: [hdfs]
+
+services:
+  namenode:
+    <<: *hadoop
+    container_name: namenode
+    hostname: namenode
+    command: namenode
+    environment:
+      CLUSTER_ID: hdfs-docker
+    ports:
+      - "9870:9870"   # Web UI NameNode
+      - "9000:9000"   # RPC HDFS
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - namenode:/hadoop/dfs/name
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:9870/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # Les DataNodes annoncent leur hostname + un port de transfert unique,
+  # publié à l'identique sur le Mac => un client hors Docker peut lire/écrire les blocs
+  # (nécessite "127.0.0.1 namenode datanode1 datanode2" dans /etc/hosts du Mac).
+  datanode1:
+    <<: *hadoop
+    container_name: datanode1
+    hostname: datanode1
+    command:
+      - datanode
+      - -D
+      - dfs.datanode.hostname=datanode1
+      - -D
+      - dfs.datanode.address=0.0.0.0:9866
+      - -D
+      - dfs.datanode.http.address=0.0.0.0:9864
+    depends_on:
+      namenode:
+        condition: service_healthy
+    ports:
+      - "9866:9866"   # Transfert de blocs DataNode 1
+      - "9864:9864"   # Web UI DataNode 1
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - datanode1:/hadoop/dfs/data
+
+  datanode2:
+    <<: *hadoop
+    container_name: datanode2
+    hostname: datanode2
+    command:
+      - datanode
+      - -D
+      - dfs.datanode.hostname=datanode2
+      - -D
+      - dfs.datanode.address=0.0.0.0:9966
+      - -D
+      - dfs.datanode.http.address=0.0.0.0:9964
+    depends_on:
+      namenode:
+        condition: service_healthy
+    ports:
+      - "9966:9966"   # Transfert de blocs DataNode 2
+      - "9964:9964"   # Web UI DataNode 2
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - datanode2:/hadoop/dfs/data
+
+volumes:
+  namenode:
+  datanode1:
+  datanode2:
+
+networks:
+  hdfs:
