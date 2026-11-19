@@ -1,0 +1,17 @@
+# Dataset Kaggle (~600 Mo) : à télécharger, voir README
+data/*
+!data/.gitkeep
+
+# Python / Jupyter
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Spark
+spark-warehouse/
+metastore_db/
+derby.log
+
+# IDE / OS
+.idea/
+.DS_Store
