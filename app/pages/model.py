@@ -22,7 +22,7 @@ st.title("🧠 Le modèle")
 
 missing = [f for f in FILES if not (DATA / f).exists()]
 if missing:
-    st.info(f"Fichiers manquants : {', '.join(missing)}. Relance l'export de `notebooks/temp_notebook.ipynb`.")
+    st.info(f"Fichiers manquants : {', '.join(missing)}. Relance l'export de `notebooks/flight-delays.ipynb`.")
     st.stop()
 
 scores = load("model_scores.csv").sort_values("auc", ascending=False)

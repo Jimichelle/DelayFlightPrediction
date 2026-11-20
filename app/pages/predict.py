@@ -101,7 +101,7 @@ def encode(prep, values, inputs="onehot"):
 
 st.title("🔮 Prédire un retard")
 
-RERUN = "Relance l'export de `notebooks/temp_notebook.ipynb`."
+RERUN = "Relance l'export de `notebooks/flight-delays.ipynb`."
 missing = [p.name for p in (MODEL_DIR / "preprocessing.json", ROUTES_CSV) if not p.exists()]
 if missing:
     st.info(f"Fichiers manquants : {', '.join(missing)}. {RERUN}")
@@ -150,11 +150,24 @@ if st.button("Prédire", type="primary"):
         st.error(f"preprocessing.json ne correspond pas à : {', '.join(wrong)}. {RERUN}")
         st.stop()
 
-    st.subheader("Probabilité de retard > 15 min")
-    for col, m in zip(st.columns(len(prep["models"])), prep["models"]):  # meilleure AUC en premier
-        proba = delay_proba(models[m["file"]], xs[m["file"]])
-        verdict = "En retard" if proba >= m["threshold"] else "À l'heure"
-        col.metric(m["name"], f"{proba:.0%}")
-        col.progress(proba)
-        col.caption(f"{verdict} · seuil {m['threshold']:.2f} · AUC test {m['auc']:.3f}")
-    st.caption("Chaque seuil est choisi sur la validation pour maximiser le F1 : au-dessus, le vol est classé « En retard ».")
+    probas = {m["file"]: delay_proba(models[m["file"]], xs[m["file"]]) for m in prep["models"]}
+    best, others = prep["models"][0], prep["models"][1:]  # triés par AUC décroissante : XGBoost en tête
+
+    # la prédiction retenue : celle du meilleur modèle
+    proba = probas[best["file"]]
+    late = proba >= best["threshold"]
+    st.subheader("Prédiction")
+    m1, m2 = st.columns(2)
+    m1.metric("Probabilité de retard > 15 min", f"{proba:.0%}")
+    m2.metric("Verdict", "En retard" if late else "À l'heure")
+    st.progress(proba)
+    st.caption(f"Modèle utilisé : **{best['name']}**, le meilleur sur le jeu de test (AUC {best['auc']:.3f}). "
+               f"Au-dessus de {best['threshold']:.0%}, le vol est classé « En retard » "
+               "(seuil choisi sur la validation pour maximiser le F1).")
+
+    st.subheader("Pour comparaison : les autres modèles")
+    for col, m in zip(st.columns(len(others)), others):
+        p = probas[m["file"]]
+        col.metric(m["name"], f"{p:.0%}", help=f"AUC test {m['auc']:.3f} · seuil {m['threshold']:.2f}")
+        col.caption("En retard" if p >= m["threshold"] else "À l'heure")
+    st.caption("Ces modèles moins précis ne servent pas à la prédiction ; ils montrent si les approches concordent.")
