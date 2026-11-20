@@ -31,7 +31,7 @@ st.title("📊 Explorer les retards")
 st.caption("Vols 2015 nettoyés (hors annulés et déroutés). Un vol est « en retard » s'il arrive plus de 15 min après l'horaire prévu.")
 
 if not DETAIL_CSV.exists():
-    st.info("`stats_detail.csv` manquant. Relance l'export de `notebooks/temp_notebook.ipynb`.")
+    st.info("`stats_detail.csv` manquant. Relance l'export de `notebooks/flight-delays.ipynb`.")
     st.stop()
 
 detail = load_detail()

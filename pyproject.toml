@@ -6,11 +6,13 @@ readme = "README.md"
 # PySpark 3.5 (imposé par le cours, compatible Java 11) n'est pas fiable avec Python 3.12+
 requires-python = ">=3.11,<3.12"
 dependencies = [
-    "pyspark",
-    "numpy",
-    "pandas",
+    "pyspark==4.3.0",
+    "numpy==2.4.6",
+    "pandas==3.1.1",
     "jupyter",
     "matplotlib",
     "streamlit",
-    "pandas-stubs",
+    "pandas-stubs==3.1.0.261029",
+    "tensorflow>=2.21.0",
+    "xgboost>=3.2.0",
 ]
