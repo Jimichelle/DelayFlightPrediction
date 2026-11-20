@@ -1,16 +1,10 @@
-from pathlib import Path
-
 import altair as alt
 import pandas as pd
 import streamlit as st
 
-DATA = Path(__file__).parents[2] / "app" / "data"
-FILES = ["model_scores.csv", "threshold_curves.csv", "correlation.csv"]
-FEATURES = {
-    "MONTH": "Mois", "DAY": "Jour du mois", "DAY_OF_WEEK": "Jour de la semaine",
-    "SCHEDULED_TIME": "Durée prévue", "DISTANCE": "Distance", "dep_hour": "Heure de départ",
-    "label": "En retard (> 15 min)",
-}
+from common import DATA, require
+
+FILES = ["model_scores.csv", "threshold_curves.csv"]
 
 
 @st.cache_data
@@ -18,16 +12,11 @@ def load(name):
     return pd.read_csv(DATA / name)
 
 
-st.title("🧠 Le modèle")
+st.title("Le modèle")
 
-missing = [f for f in FILES if not (DATA / f).exists()]
-if missing:
-    st.info(f"Fichiers manquants : {', '.join(missing)}. Relance l'export de `notebooks/flight-delays.ipynb`.")
-    st.stop()
-
+require(*(DATA / f for f in FILES))
 scores = load("model_scores.csv").sort_values("auc", ascending=False)
 curves = load("threshold_curves.csv")
-corr = load("correlation.csv").set_index("Unnamed: 0")  # matrice carrée exportée avec son index
 
 st.markdown(
     "Quatre modèles prédisent si un vol arrivera avec **plus de 15 min de retard**, à partir d'informations "
@@ -71,27 +60,3 @@ if not at.empty:
         f"et {r['precision']:.0%} des vols qu'il annonce en retard le sont vraiment (précision). "
         "Monter le seuil donne moins de fausses alertes mais laisse passer plus de retards."
     )
-
-st.subheader("Matrice de corrélation")
-order = [FEATURES[c] for c in corr.columns]
-cells = (corr.rename(index=FEATURES, columns=FEATURES)
-         .rename_axis("Variable 1").reset_index()
-         .melt("Variable 1", var_name="Variable 2", value_name="Corrélation"))
-base = alt.Chart(cells).encode(
-    x=alt.X("Variable 2:N", sort=order, title=None, axis=alt.Axis(labelAngle=-35)),
-    y=alt.Y("Variable 1:N", sort=order, title=None),
-)
-heatmap = base.mark_rect().encode(
-    color=alt.Color("Corrélation:Q", scale=alt.Scale(scheme="redblue", domain=[-1, 1], reverse=True)),
-    tooltip=["Variable 1:N", "Variable 2:N", alt.Tooltip("Corrélation:Q", format=".3f")],
-)
-labels = base.mark_text(fontSize=12).encode(
-    text=alt.Text("Corrélation:Q", format=".2f"),
-    color=alt.condition("abs(datum['Corrélation']) > 0.5", alt.value("white"), alt.value("black")),
-)
-st.altair_chart((heatmap + labels).properties(height=420), width="stretch")
-st.caption(
-    "Corrélation de Pearson entre les variables numériques et le retard, sur l'échantillon d'entraînement (15 % des vols). "
-    "Les liens linéaires avec le retard sont faibles : c'est pourquoi les modèles non linéaires (XGBoost, réseau de "
-    "neurones) font mieux que la régression logistique. Compagnie et aéroports sont des catégories, absentes de la matrice."
-)
