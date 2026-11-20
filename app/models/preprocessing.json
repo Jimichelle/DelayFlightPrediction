@@ -5,28 +5,14 @@
       "file": "xgboost.json",
       "inputs": "onehot",
       "threshold": 0.23000000000000004,
-      "auc": 0.7238671779632568
-    },
-    {
-      "name": "Neural Network MLP (TF)",
-      "file": "neural_network_mlp_tf.keras",
-      "inputs": "onehot",
-      "threshold": 0.19000000000000003,
-      "auc": 0.6773056387901306
+      "auc": 0.7239328422923045
     },
     {
       "name": "Random Forest (Spark)",
       "file": "random_forest_spark",
       "inputs": "raw",
       "threshold": 0.20000000000000004,
-      "auc": 0.6649878025054932
-    },
-    {
-      "name": "Logistic Regression (TF)",
-      "file": "logistic_regression_tf.keras",
-      "inputs": "onehot",
-      "threshold": 0.17000000000000004,
-      "auc": 0.6362737417221069
+      "auc": 0.6650705215737835
     }
   ],
   "num_cols": [
