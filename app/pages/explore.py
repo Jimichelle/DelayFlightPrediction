@@ -1,22 +1,15 @@
-from pathlib import Path
-
 import pandas as pd
 import streamlit as st
 
-ROOT = Path(__file__).parents[2]
-DETAIL_CSV = ROOT / "app" / "data" / "stats_detail.csv"
-AIRLINES_CSV = ROOT / "data" / "airlines.csv"
+from common import DATA, airline_names, require
+
+DETAIL_CSV = DATA / "stats_detail.csv"
 MONTHS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"]
 
 
 @st.cache_data
 def load_detail():
     return pd.read_csv(DETAIL_CSV)
-
-
-@st.cache_data
-def airline_names():
-    return dict(pd.read_csv(AIRLINES_CSV).values) if AIRLINES_CSV.exists() else {}
 
 
 def aggregate(df, by):
@@ -27,13 +20,10 @@ def aggregate(df, by):
     return g
 
 
-st.title("📊 Explorer les retards")
+st.title("Explorer les retards")
 st.caption("Vols 2015 nettoyés (hors annulés et déroutés). Un vol est « en retard » s'il arrive plus de 15 min après l'horaire prévu.")
 
-if not DETAIL_CSV.exists():
-    st.info("`stats_detail.csv` manquant. Relance l'export de `notebooks/flight-delays.ipynb`.")
-    st.stop()
-
+require(DETAIL_CSV)
 detail = load_detail()
 names = airline_names()
 
